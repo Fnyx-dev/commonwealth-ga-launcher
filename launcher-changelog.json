@@ -1,6 +1,12 @@
 {
   "versions": [
     {
+      "version": "0.1.27",
+      "changes": [
+        "**Multithreaded Physics** (on by default) in the Game Client Patch **Performance options**: PhysX runs on 4 worker threads instead of one, roughly **halving the physics stall** when many players or robots die at once."
+      ]
+    },
+    {
       "version": "0.1.26",
       "changes": [
         "Added **Performance options** to the **Game Client Patch** card: three checkboxes for new client fixes, applied on your next launch.",

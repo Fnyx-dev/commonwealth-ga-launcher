@@ -7,6 +7,8 @@ import {
   CLIENT_DLL_PATCH_DEFAULTS,
   CLIENT_DLL_PATCH_SECTION,
   CLIENT_DLL_PATCH_SETTING_KEYS,
+  clientDllPatchValue,
+  clientDllPatchValueState,
   isClientDllPatchId,
   type ClientDllPatchId
 } from '@shared/clientPatches';
@@ -659,20 +661,19 @@ export function unavailableClientPatches(): ClientPatchStatus[] {
     { id: 'adaptive-client-performance', applied: null },
     { id: 'render-command-signal', applied: null },
     { id: 'foot-placement-off', applied: null },
-    { id: 'combat-text-shadows-off', applied: null }
+    { id: 'combat-text-shadows-off', applied: null },
+    { id: 'physx-multithread', applied: null }
   ];
 }
 
-/** Mirrors the DLL: "1" is on, "0" is off, and a missing or other value keeps the patch's default. */
+/** Mirrors the DLL: a valid value decides, and a missing or invalid one keeps the patch's default. */
 function isClientDllPatchEnabled(text: string, id: ClientDllPatchId): boolean {
   const value = effectiveSectionValues(
     text,
     CLIENT_DLL_PATCH_SECTION,
     CLIENT_DLL_PATCH_SETTING_KEYS[id]
   ).at(-1);
-  if (value === '1') return true;
-  if (value === '0') return false;
-  return CLIENT_DLL_PATCH_DEFAULTS[id];
+  return clientDllPatchValueState(id, value) ?? CLIENT_DLL_PATCH_DEFAULTS[id];
 }
 
 export async function inspectClientPatches(
@@ -686,7 +687,8 @@ export async function inspectClientPatches(
   const dllPatchApplied: Record<ClientDllPatchId, boolean> = {
     'render-command-signal': false,
     'foot-placement-off': false,
-    'combat-text-shadows-off': false
+    'combat-text-shadows-off': false,
+    'physx-multithread': false
   };
   try {
     // The DLL reads only the active TgEngine.ini.
@@ -724,7 +726,8 @@ export async function inspectClientPatches(
     { id: 'adaptive-client-performance', applied: performanceApplied },
     { id: 'render-command-signal', applied: dllPatchApplied['render-command-signal'] },
     { id: 'foot-placement-off', applied: dllPatchApplied['foot-placement-off'] },
-    { id: 'combat-text-shadows-off', applied: dllPatchApplied['combat-text-shadows-off'] }
+    { id: 'combat-text-shadows-off', applied: dllPatchApplied['combat-text-shadows-off'] },
+    { id: 'physx-multithread', applied: dllPatchApplied['physx-multithread'] }
   ];
 }
 
@@ -1334,14 +1337,22 @@ async function patchIniFile(
     apply(patchConsoleToggleBinding(patchedText, options.key));
   }
   if (options.kind === 'client-dll-patch') {
-    apply(
-      patchSectionValue(
-        patchedText,
-        CLIENT_DLL_PATCH_SECTION,
-        CLIENT_DLL_PATCH_SETTING_KEYS[options.id],
-        options.enabled ? '1' : '0'
-      )
-    );
+    const key = CLIENT_DLL_PATCH_SETTING_KEYS[options.id];
+    const current = effectiveSectionValues(patchedText, CLIENT_DLL_PATCH_SECTION, key);
+    // A count line that already says "on" (for example a hand-tuned thread count) is kept.
+    const alreadyMatches =
+      current.length > 0 &&
+      current.every((value) => clientDllPatchValueState(options.id, value) === options.enabled);
+    if (!alreadyMatches) {
+      apply(
+        patchSectionValue(
+          patchedText,
+          CLIENT_DLL_PATCH_SECTION,
+          key,
+          clientDllPatchValue(options.id, options.enabled)
+        )
+      );
+    }
   }
   if (options.kind === 'adaptive-performance') {
     apply(patchSectionValue(patchedText, 'TextureStreaming', 'PoolSize', String(options.texturePoolMb)));
@@ -1410,9 +1421,13 @@ async function patchIniFile(
     if (options.kind === 'client-dll-patch') {
       const key = CLIENT_DLL_PATCH_SETTING_KEYS[options.id];
       const values = effectiveSectionValues(text, CLIENT_DLL_PATCH_SECTION, key);
-      const expected = options.enabled ? '1' : '0';
-      if (values.length === 0 || values.some((value) => value !== expected)) {
-        throw new Error(`${fileName} did not retain ${key}=${expected}`);
+      if (
+        values.length === 0 ||
+        values.some((value) => clientDllPatchValueState(options.id, value) !== options.enabled)
+      ) {
+        throw new Error(
+          `${fileName} did not retain ${key}=${clientDllPatchValue(options.id, options.enabled)}`
+        );
       }
     }
   };
@@ -1918,7 +1933,8 @@ export async function ensureClientConfiguration(
   for (const [id, enabled] of [
     ['render-command-signal', patches.renderCommandSignal],
     ['foot-placement-off', patches.footPlacementOff],
-    ['combat-text-shadows-off', patches.combatTextShadowsOff]
+    ['combat-text-shadows-off', patches.combatTextShadowsOff],
+    ['physx-multithread', patches.physxMultithread]
   ] as const) {
     dllPatchResults.push(await setClientDllPatch(install, id, enabled, log, backupDirectory));
   }

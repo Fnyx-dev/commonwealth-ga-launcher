@@ -367,7 +367,8 @@ export function defaultSettings(defaultServerName = DEFAULT_BUILT_IN_SERVER_NAME
       adaptiveClientPerformance: true,
       renderCommandSignal: true,
       footPlacementOff: true,
-      combatTextShadowsOff: false
+      combatTextShadowsOff: false,
+      physxMultithread: true
     },
     dlcs: {
       surfsideAtollPvpMaps: true,
@@ -579,7 +580,11 @@ function sanitizeStoredPatches(value: unknown, fallback: Settings['patches']): S
     combatTextShadowsOff:
       typeof value.combatTextShadowsOff === 'boolean'
         ? value.combatTextShadowsOff
-        : fallback.combatTextShadowsOff
+        : fallback.combatTextShadowsOff,
+    physxMultithread:
+      typeof value.physxMultithread === 'boolean'
+        ? value.physxMultithread
+        : fallback.physxMultithread
   };
 }
 
@@ -591,7 +596,8 @@ function validateUpdatedPatches(value: unknown): Settings['patches'] {
     typeof value.adaptiveClientPerformance !== 'boolean' ||
     typeof value.renderCommandSignal !== 'boolean' ||
     typeof value.footPlacementOff !== 'boolean' ||
-    typeof value.combatTextShadowsOff !== 'boolean'
+    typeof value.combatTextShadowsOff !== 'boolean' ||
+    typeof value.physxMultithread !== 'boolean'
   ) {
     throw new Error('Game patch settings are invalid.');
   }
@@ -601,7 +607,8 @@ function validateUpdatedPatches(value: unknown): Settings['patches'] {
     adaptiveClientPerformance: value.adaptiveClientPerformance,
     renderCommandSignal: value.renderCommandSignal,
     footPlacementOff: value.footPlacementOff,
-    combatTextShadowsOff: value.combatTextShadowsOff
+    combatTextShadowsOff: value.combatTextShadowsOff,
+    physxMultithread: value.physxMultithread
   };
 }
 

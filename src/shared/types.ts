@@ -117,6 +117,7 @@ export interface PatchSettings {
   renderCommandSignal: boolean;
   footPlacementOff: boolean;
   combatTextShadowsOff: boolean;
+  physxMultithread: boolean;
 }
 
 export type DlcId = 'surfside-atoll-pvp-maps' | 'carbon-capture' | 'pve-factory-3-4';
@@ -256,7 +257,8 @@ export type ClientPatchId =
   | 'adaptive-client-performance'
   | 'render-command-signal'
   | 'foot-placement-off'
-  | 'combat-text-shadows-off';
+  | 'combat-text-shadows-off'
+  | 'physx-multithread';
 
 export interface ClientPatchStatus {
   id: ClientPatchId;

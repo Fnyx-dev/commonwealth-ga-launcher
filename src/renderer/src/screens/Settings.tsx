@@ -215,6 +215,16 @@ const DLL_PATCH_COPY: Record<ClientDllPatchId, { title: string; description: JSX
         default: without the outline, numbers are harder to read over bright backgrounds.
       </>
     )
+  },
+  'physx-multithread': {
+    title: 'Multithreaded Physics',
+    description: (
+      <>
+        Runs PhysX on <strong>4 worker threads</strong> instead of one. Roughly{' '}
+        <strong>half the physics stall</strong> when many players or robots die at once. A thread
+        count already set in TgEngine.ini is kept.
+      </>
+    )
   }
 };
 

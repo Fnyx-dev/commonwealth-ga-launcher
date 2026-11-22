@@ -2563,7 +2563,7 @@ function PatchesTab({
             <div className={styles.patchFixDetails}>
               <div className={styles.patchFixHeader}>
                 <span>Current fixes</span>
-                <span>2 shipped fixes</span>
+                <span>3 shipped fixes</span>
               </div>
               <ul className={styles.patchFixList}>
                 <li>
@@ -2586,6 +2586,18 @@ function PatchesTab({
                     <small>
                       Fixes the legacy <strong>aim drift while flying</strong> across all classes,
                       especially when using sniper rifles.
+                    </small>
+                  </span>
+                </li>
+                <li>
+                  <span className={styles.patchFixIndex} aria-hidden="true">
+                    03
+                  </span>
+                  <span className={styles.patchFixCopy}>
+                    <strong>Settings Survive Daylight Saving</strong>
+                    <small>
+                      Fixes <strong>keybindings and settings resetting</strong> when the clocks
+                      change.
                     </small>
                   </span>
                 </li>
